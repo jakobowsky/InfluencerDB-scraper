@@ -54,7 +54,6 @@ class InstagramScraper(object):
             profile_page_recent_posts = self.profile_page_recent_posts(json_data)
         # return info and add it to api in another function
 
-
     def profile_page_metrics(self, json_data_from_profile):
         results = {}
         metrics = json_data_from_profile['entry_data']['ProfilePage'][0]['graphql']['user']
@@ -69,8 +68,9 @@ class InstagramScraper(object):
 
     def profile_page_recent_posts(self, json_data_from_profile):
         results = []
-        metrics = json_data_from_profile['entry_data']['ProfilePage'][0]['graphql']['user']['edge_owner_to_timeline_media'][
-            "edges"]
+        metrics = \
+            json_data_from_profile['entry_data']['ProfilePage'][0]['graphql']['user']['edge_owner_to_timeline_media'][
+                "edges"]
         for node in metrics:
             node = node.get('node')
             if node and isinstance(node, dict):
@@ -103,11 +103,29 @@ class InstagramScraper(object):
         except Exception as e:
             raise e
 
+    def get_connected_hashtags(self, current_hashtag):
+        results = []
+        try:
+            response = self.__request_url(f"https://www.instagram.com/explore/tags/{current_hashtag}/")
+            json_data = self.extract_json_data(response)
+            metrics = json_data['entry_data']['TagPage'][0]['graphql']['hashtag']['edge_hashtag_to_related_tags'][
+                "edges"]
+        except Exception as e:
+            raise e
+        else:
+            for node in metrics:
+                node = node.get('node')
+                if node and isinstance(node, dict):
+                    results.append(node['name'])
+        return results
+
 
 class ExploreInstragram():
 
     def __init__(self):
         scraper = InstagramScraper()
 
+
 x = InstagramScraper()
+print(x.get_connected_hashtags('coding'))
 m1 = x.get_account_name_from_post('B7v3XnQgz5x')
