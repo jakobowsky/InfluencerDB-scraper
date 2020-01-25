@@ -3,7 +3,6 @@ import requests
 from bs4 import BeautifulSoup
 from pprint import pprint
 
-
 class InstagramScraper(object):
 
     def __init__(self):
@@ -17,6 +16,7 @@ class InstagramScraper(object):
             'Accept-Language': 'en-US,en;q=0.8',
             'Connection': 'keep-alive'
         }
+        self.discovered_hashtags = {}
 
     def __request_url(self, link):
         try:
@@ -103,7 +103,7 @@ class InstagramScraper(object):
         except Exception as e:
             raise e
 
-    def get_connected_hashtags(self, current_hashtag):
+    def __get_connected_hashtags(self, current_hashtag):
         results = []
         try:
             response = self.__request_url(f"https://www.instagram.com/explore/tags/{current_hashtag}/")
@@ -119,6 +119,20 @@ class InstagramScraper(object):
                     results.append(node['name'])
         return results
 
+    def get_category_hashtags(self, current_hashtag, deepth):
+        if deepth == 0:
+            return
+        if current_hashtag not in self.discovered_hashtags:
+            new_hashtags = self.__get_connected_hashtags(current_hashtag)
+            self.discovered_hashtags.update(new_hashtags)
+            for hashtag in new_hashtags:
+                self.get_category_hashtags(hashtag, deepth-1)
+
+    def discover_hashtags(self, firsthashtag):
+        self.discovered_hashtags = {firsthashtag}
+        self.get_category_hashtags(firsthashtag, 3)
+        import pdb
+        pdb.set_trace()
 
 class ExploreInstragram():
 
@@ -127,5 +141,6 @@ class ExploreInstragram():
 
 
 x = InstagramScraper()
-print(x.get_connected_hashtags('coding'))
-m1 = x.get_account_name_from_post('B7v3XnQgz5x')
+x.discover_hashtags('coding')
+# print(x.get_connected_hashtags('coding'))
+# m1 = x.get_account_name_from_post('')
