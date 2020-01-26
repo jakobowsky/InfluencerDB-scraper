@@ -3,6 +3,7 @@ import requests
 from bs4 import BeautifulSoup
 from pprint import pprint
 
+
 class InstagramScraper(object):
 
     def __init__(self):
@@ -16,7 +17,8 @@ class InstagramScraper(object):
             'Accept-Language': 'en-US,en;q=0.8',
             'Connection': 'keep-alive'
         }
-        self.discovered_hashtags = {}
+        self.discovered_hashtags = set()
+        self.already_checked = set()
 
     def __request_url(self, link):
         try:
@@ -72,7 +74,9 @@ class InstagramScraper(object):
 
     def profile_page_recent_posts(self, json_data_from_profile):
         results = []
-        metrics = json_data_from_profile['entry_data']['ProfilePage'][0]['graphql']['user']['edge_owner_to_timeline_media']["edges"]
+        metrics = \
+        json_data_from_profile['entry_data']['ProfilePage'][0]['graphql']['user']['edge_owner_to_timeline_media'][
+            "edges"]
         for node in metrics:
             node = node.get('node')
             if node and isinstance(node, dict):
@@ -124,22 +128,25 @@ class InstagramScraper(object):
     def get_category_hashtags(self, current_hashtag, deepth):
         if deepth == 0:
             return
-        if current_hashtag not in self.discovered_hashtags:
+        if current_hashtag not in self.already_checked:
             new_hashtags = self.__get_connected_hashtags(current_hashtag)
             self.discovered_hashtags.update(new_hashtags)
             for hashtag in new_hashtags:
-                self.get_category_hashtags(hashtag, deepth-1)
+                self.get_category_hashtags(hashtag, deepth - 1)
+                self.already_checked.update(hashtag)
 
     def discover_hashtags(self, firsthashtag):
-        self.discovered_hashtags = {firsthashtag}
-        self.get_category_hashtags(firsthashtag, 3)
-        import pdb
-        pdb.set_trace()
+        self.discovered_hashtags = set()
+        self.already_checked = set()
+        self.get_category_hashtags(firsthashtag, 2)
+        new_hashtags = list(self.discovered_hashtags)
+        return new_hashtags
 
 
-
-x = InstagramScraper()
+# x = InstagramScraper()
+# print(x.discover_hashtags('coding'))
 # x.get_current_profile_info('jakobowsky')
-# x.discover_hashtags('coding')
+# print(x.discover_hashtags('coding'))
+# x.__get_connected_hashtags('coding')
 # print(x.get_connected_hashtags('coding'))
 # m1 = x.get_account_name_from_post('')
