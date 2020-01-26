@@ -94,7 +94,9 @@ class HashtagScript:
 
 
 if __name__ == '__main__':
-    new_category = "Technology"
-    basic_hashtags = ['tech', 'coding', 'robotics']
-    script = HashtagScript(new_category, basic_hashtags)
-    script()
+    print("Script is not active now")
+    pass
+    # new_category = "Technology"
+    # basic_hashtags = ['tech', 'coding', 'robotics']
+    # script = HashtagScript(new_category, basic_hashtags)
+    # script()

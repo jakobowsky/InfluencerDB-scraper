@@ -2,6 +2,7 @@ import json
 import requests
 from bs4 import BeautifulSoup
 from pprint import pprint
+from proxychange import ProxyChanger
 
 
 class InstagramScraper(object):
@@ -19,21 +20,43 @@ class InstagramScraper(object):
         }
         self.discovered_hashtags = set()
         self.already_checked = set()
+        self.proxy_changer = ProxyChanger()
+        self.current_proxy = self.proxy_changer.actual_proxy
+        self.number_of_requests = 0
 
     def __request_url(self, link):
-        try:
-            response = requests.get(
-                link,
-                timeout=4,
-                headers=self.headers,
-            ).text
-        except requests.HTTPError:
-            raise requests.HTTPError(
-                'Received non 200 status code from Instagram')
-        except requests.RequestException:
-            raise requests.RequestException
-        else:
-            return response
+        for attempt in range(10):
+            try:
+                if self.number_of_requests == 50:
+                    self.proxy_changer.set_new_proxy()
+                    self.current_proxy = self.proxy_changer.actual_proxy
+                    self.number_of_requests = 0
+                response = requests.get(
+                    link,
+                    timeout=4,
+                    headers=self.headers,
+                    proxies={
+                        'http': self.current_proxy,
+                        'https': self.current_proxy}
+                ).text
+                self.number_of_requests += 1
+            except requests.HTTPError:
+                print("HTTP error, getting new proxy")
+                self.proxy_changer.set_new_proxy()
+                self.current_proxy = self.proxy_changer.actual_proxy
+            except requests.RequestException:
+                print('RequestException, getting new proxy')
+                self.proxy_changer.set_new_proxy()
+                self.current_proxy = self.proxy_changer.actual_proxy
+            except Exception as e:
+                print("__request_url error: ", e)
+                self.proxy_changer.set_new_proxy()
+                self.current_proxy = self.proxy_changer.actual_proxy
+            else:
+                print("Got response using proxy: ", self.current_proxy)
+                return response
+        print("ERROR! Max attempts.")
+        raise
 
     @staticmethod
     def extract_json_data(html):
@@ -75,8 +98,8 @@ class InstagramScraper(object):
     def profile_page_recent_posts(self, json_data_from_profile):
         results = []
         metrics = \
-        json_data_from_profile['entry_data']['ProfilePage'][0]['graphql']['user']['edge_owner_to_timeline_media'][
-            "edges"]
+            json_data_from_profile['entry_data']['ProfilePage'][0]['graphql']['user']['edge_owner_to_timeline_media'][
+                "edges"]
         for node in metrics:
             node = node.get('node')
             if node and isinstance(node, dict):
@@ -108,6 +131,13 @@ class InstagramScraper(object):
             return username
         except Exception as e:
             raise e
+
+    def discover_accounts_from_hashtag(self, hashtag):
+        posts_ids = self.discover_posts(hashtag)
+        usernames = []
+        for post_id in posts_ids:
+            usernames.append(self.get_account_name_from_post(post_id))
+        return set(usernames)
 
     def __get_connected_hashtags(self, current_hashtag):
         results = []
@@ -143,7 +173,9 @@ class InstagramScraper(object):
         return new_hashtags
 
 
-# x = InstagramScraper()
+x = InstagramScraper()
+print(x.discover_accounts_from_hashtag('coding'))
+
 # print(x.discover_hashtags('coding'))
 # x.get_current_profile_info('jakobowsky')
 # print(x.discover_hashtags('coding'))
