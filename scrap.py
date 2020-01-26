@@ -173,8 +173,8 @@ class InstagramScraper(object):
         return new_hashtags
 
 
-x = InstagramScraper()
-print(x.discover_accounts_from_hashtag('coding'))
+# x = InstagramScraper()
+# print(x.discover_accounts_from_hashtag('coding'))
 
 # print(x.discover_hashtags('coding'))
 # x.get_current_profile_info('jakobowsky')
