@@ -25,11 +25,25 @@ class HashtagScript:
         return len(self.check_current_hashtags())
 
     def find_new_hashtags(self):
-        pass
+        for hashtag in self.basic_hashtags:
+
 
     def add_new_hashtags_to_db(self, hashtags):
         # here just post request with all_hashtags, handle on backend site
         pass
+
+    def __add_category(self):
+        link_to_category = f'{self.base_url}categories'
+        body = {
+            "name": f"{self.category.title()}"
+        }
+        r = requests.post(link_to_category,data=body)
+        if r.status_code == 200:
+            print("Added new category to db: ", r.json())
+            return True
+        else:
+            print("Smth went wrong: ", r.json())
+            raise
 
     def add_category_to_db(self):
         link_to_category = f'{self.base_url}categories?name={self.category}'
@@ -39,8 +53,16 @@ class HashtagScript:
                 print("This category is already in db.")
                 amount_of_hashtags = self.check_amount_current_hashtags()
                 print(f'It has {amount_of_hashtags} hashtags.')
+                if amount_of_hashtags < 4:
+                    pass
+                    # explore new hashtags
+            else:
+                print("This category is not in db. Adding and finding hashtags.")
+                if self.__add_category():
+                    pass
+                    # explore new hashtags
+                # if success then find hashtags and add them
 
-            print(response)
         except Exception as e:
             print("ERROR: ", e)
 
