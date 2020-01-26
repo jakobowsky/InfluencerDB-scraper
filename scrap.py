@@ -52,6 +52,10 @@ class InstagramScraper(object):
         else:
             profile_page_metrics = self.profile_page_metrics(json_data)
             profile_page_recent_posts = self.profile_page_recent_posts(json_data)
+            # taken_at_timestamp
+            # >> > from datetime import datetime
+            # >> > datetime.fromtimestamp(1172969203.1)
+            # datetime.datetime(2007, 3, 4, 0, 46, 43, 100000)
         # return info and add it to api in another function
 
     def profile_page_metrics(self, json_data_from_profile):
@@ -68,9 +72,7 @@ class InstagramScraper(object):
 
     def profile_page_recent_posts(self, json_data_from_profile):
         results = []
-        metrics = \
-            json_data_from_profile['entry_data']['ProfilePage'][0]['graphql']['user']['edge_owner_to_timeline_media'][
-                "edges"]
+        metrics = json_data_from_profile['entry_data']['ProfilePage'][0]['graphql']['user']['edge_owner_to_timeline_media']["edges"]
         for node in metrics:
             node = node.get('node')
             if node and isinstance(node, dict):
@@ -134,13 +136,10 @@ class InstagramScraper(object):
         import pdb
         pdb.set_trace()
 
-class ExploreInstragram():
-
-    def __init__(self):
-        scraper = InstagramScraper()
 
 
 x = InstagramScraper()
-x.discover_hashtags('coding')
+# x.get_current_profile_info('jakobowsky')
+# x.discover_hashtags('coding')
 # print(x.get_connected_hashtags('coding'))
 # m1 = x.get_account_name_from_post('')
