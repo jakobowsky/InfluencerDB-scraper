@@ -3,6 +3,7 @@ import requests
 from bs4 import BeautifulSoup
 from pprint import pprint
 from proxychange import ProxyChanger
+import time
 
 
 class InstagramScraper(object):
@@ -20,43 +21,68 @@ class InstagramScraper(object):
         }
         self.discovered_hashtags = set()
         self.already_checked = set()
-        self.proxy_changer = ProxyChanger()
-        self.current_proxy = self.proxy_changer.actual_proxy
+        # Let's try not use any proxies
+        # self.proxy_changer = ProxyChanger()
+        # self.current_proxy = self.proxy_changer.actual_proxy
         self.number_of_requests = 0
 
     def __request_url(self, link):
         for attempt in range(10):
             try:
                 if self.number_of_requests == 50:
-                    self.proxy_changer.set_new_proxy()
-                    self.current_proxy = self.proxy_changer.actual_proxy
+                    print("Did 50 requests, going to sleep for 15 secs...")
+                    time.sleep(15)
                     self.number_of_requests = 0
                 response = requests.get(
                     link,
                     timeout=4,
                     headers=self.headers,
-                    proxies={
-                        'http': self.current_proxy,
-                        'https': self.current_proxy}
                 ).text
                 self.number_of_requests += 1
             except requests.HTTPError:
                 print("HTTP error, getting new proxy")
-                self.proxy_changer.set_new_proxy()
-                self.current_proxy = self.proxy_changer.actual_proxy
             except requests.RequestException:
                 print('RequestException, getting new proxy')
-                self.proxy_changer.set_new_proxy()
-                self.current_proxy = self.proxy_changer.actual_proxy
             except Exception as e:
                 print("__request_url error: ", e)
-                self.proxy_changer.set_new_proxy()
-                self.current_proxy = self.proxy_changer.actual_proxy
             else:
-                print("Got response using proxy: ", self.current_proxy)
                 return response
-        print("ERROR! Max attempts.")
+        print("ERROR! Max attempts. Raising error")
         raise
+
+    # def __request_url_proxy(self, link):
+    #     for attempt in range(10):
+    #         try:
+    #             if self.number_of_requests == 50:
+    #                 self.proxy_changer.set_new_proxy()
+    #                 self.current_proxy = self.proxy_changer.actual_proxy
+    #                 self.number_of_requests = 0
+    #             response = requests.get(
+    #                 link,
+    #                 timeout=4,
+    #                 headers=self.headers,
+    #                 proxies={
+    #                     'http': self.current_proxy,
+    #                     'https': self.current_proxy}
+    #             ).text
+    #             self.number_of_requests += 1
+    #         except requests.HTTPError:
+    #             print("HTTP error, getting new proxy")
+    #             self.proxy_changer.set_new_proxy()
+    #             self.current_proxy = self.proxy_changer.actual_proxy
+    #         except requests.RequestException:
+    #             print('RequestException, getting new proxy')
+    #             self.proxy_changer.set_new_proxy()
+    #             self.current_proxy = self.proxy_changer.actual_proxy
+    #         except Exception as e:
+    #             print("__request_url error: ", e)
+    #             self.proxy_changer.set_new_proxy()
+    #             self.current_proxy = self.proxy_changer.actual_proxy
+    #         else:
+    #             print("Got response using proxy: ", self.current_proxy)
+    #             return response
+    #     print("ERROR! Max attempts.")
+    #     raise
 
     @staticmethod
     def extract_json_data(html):

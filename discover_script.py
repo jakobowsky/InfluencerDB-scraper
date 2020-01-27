@@ -8,6 +8,7 @@ class DiscoverBot:
     def __init__(self):
         self.base_url = 'http://127.0.0.1:8000/api/'
         self.scraper = InstagramScraper()
+        self.headers = {'Content-type': 'application/json', 'Accept': '*/*'}
 
     def start_bot(self):
         pass
@@ -23,14 +24,27 @@ class DiscoverBot:
 
     def add_account_to_db(self, account: str, category: Dict):
         print(f"Adding {account} to db")
+        link_to_adding_account = f'{self.base_url}add_new_account/'
         profile_page_metrics, profile_page_recent_posts = self.scraper.get_current_profile_info(account)
-        
-        pass
+        body = {
+            'account': account,
+            'category': category,
+            'profile_page_metrics': profile_page_metrics,
+            'profile_page_recent_posts': profile_page_recent_posts,
+        }
+        r = requests.post(link_to_adding_account, json=body, headers=self.headers)
+        if r.status_code == 200:
+            return True
+        else:
+            return False
 
     def update_db_with_users(self, accounts: List[str], category: Dict):
         for account in accounts:
             if not self.check_if_account_exists(account):
-                self.add_account_to_db(account, category)
+                if self.add_account_to_db(account, category):
+                    print("Added account to db.")
+                else:
+                    print(f"Something went wrong while adding {account} account to db.")
 
     def discover_new_accounts_through_hashtags(self, hashtags: List[str], category: Dict):
         for hashtag in hashtags:
@@ -39,11 +53,11 @@ class DiscoverBot:
             time.sleep(3)
 
     def get_categories(self):
+        # {'id': 4, 'name': 'Technology'} <-- example of category
         link_to_categories = f"{self.base_url}categories"
         categories = requests.get(link_to_categories).json()
         if categories:
             for category in categories:
-                print(category)
                 hashtags = self.get_hashtags_from_category(category.get("id"))
 
     def get_hashtags_from_category(self, category_id):
@@ -51,5 +65,10 @@ class DiscoverBot:
         hashtags = requests.get(link_to_hashtags).json()
         return [hashtag['name'] for hashtag in hashtags]
 
+
 # DiscoverBot().get_categories()
-# print(DiscoverBot().check_if_account_exists('jakobowskya'))
+# print(DiscoverBot().check_if_account_exists('jakobowsky'))
+DiscoverBot().add_account_to_db('jakobowsky', {'id': 4, 'name': 'Technology'})
+
+# DiscoverBot().get_categories()
+# DiscoverBot
