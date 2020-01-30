@@ -193,16 +193,3 @@ class InstagramScraper(object):
         self.get_category_hashtags(firsthashtag, 2)
         new_hashtags = list(self.discovered_hashtags)
         return new_hashtags
-
-
-# USE MAIN
-
-# x = InstagramScraper()
-# print(x.discover_accounts_from_hashtag('coding'))
-
-# print(x.discover_hashtags('coding'))
-# x.get_current_profile_info('jakobowsky')
-# print(x.discover_hashtags('coding'))
-# x.__get_connected_hashtags('coding')
-# print(x.get_connected_hashtags('coding'))
-# m1 = x.get_account_name_from_post('')

@@ -36,8 +36,12 @@ class UpdateBot:
             time.sleep(2)
 
     def update_accounts(self):
+        # it updates 50 accounts
         accounts = self.get_accounts_from_api()
+        print(f"Amount of accounts to update: {len(accounts)}")
         self.iterate_through_accounts_and_update(accounts)
 
+
 if __name__ == '__main__':
-    pass
+    bot = UpdateBot()
+    bot.update_accounts()
