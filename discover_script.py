@@ -1,6 +1,7 @@
 from scrap import InstagramScraper
 import requests
 import time
+import random
 from typing import Dict, List
 
 
@@ -11,7 +12,22 @@ class DiscoverBot:
         self.headers = {'Content-type': 'application/json', 'Accept': '*/*'}
 
     def start_bot(self):
-        pass
+        categories = self.get_categories()
+        if categories:
+            for category in categories:  # category is a dict
+                number_of_hashtags = random.randint(1, 6)
+                print(f"Number of hashtags random = {number_of_hashtags}")
+                print("Looking for hashtags...")
+                hashtags = self.get_hashtags_from_category(category.get("id"))
+                if hashtags:
+                    hashtags = hashtags[:number_of_hashtags]
+                else:
+                    print("no hashtags to this category...")
+                    continue
+                self.discover_new_accounts_through_hashtags(hashtags, category)
+                print("Sleeping for next category...")
+                time.sleep(random.randint(30, 100))
+        print("Finished.")
 
     def check_if_account_exists(self, username):
         print(f"Checking if {username} is in db.")
@@ -56,9 +72,7 @@ class DiscoverBot:
         # {'id': 4, 'name': 'Technology'} <-- example of category
         link_to_categories = f"{self.base_url}categories"
         categories = requests.get(link_to_categories).json()
-        if categories:
-            for category in categories:
-                hashtags = self.get_hashtags_from_category(category.get("id"))
+        return categories
 
     def get_hashtags_from_category(self, category_id):
         link_to_hashtags = f"{self.base_url}hashtags?category__id={category_id}"
@@ -66,9 +80,6 @@ class DiscoverBot:
         return [hashtag['name'] for hashtag in hashtags]
 
 
-# DiscoverBot().get_categories()
-# print(DiscoverBot().check_if_account_exists('jakobowsky'))
-DiscoverBot().add_account_to_db('jakobowsky', {'id': 4, 'name': 'Technology'})
-
-# DiscoverBot().get_categories()
-# DiscoverBot
+if __name__ == '__main__':
+    bot = DiscoverBot()
+    bot.start_bot()

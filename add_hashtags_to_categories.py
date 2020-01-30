@@ -2,6 +2,7 @@ from scrap import InstagramScraper
 import requests
 import time
 
+
 class HashtagScript:
 
     def __init__(self, category, basic_hashtags):
@@ -54,8 +55,8 @@ class HashtagScript:
         body = {
             "name": f"{self.category.title()}"
         }
-        r = requests.post(link_to_category, data=body, headers=self.headers)
-        if r.status_code == 200:
+        r = requests.post(link_to_category, json=body, headers=self.headers)
+        if r.status_code == 201:  # created
             print("Added new category to db: ", r.json())
             return True
         else:
@@ -84,6 +85,9 @@ class HashtagScript:
             else:
                 print("This category is not in db. Adding and finding hashtags.")
                 if self.__add_category():
+                    response = requests.get(link_to_category).json()
+                    print(response)
+                    category_id = response[0].get('id')
                     if self.add_new_hashtags_to_db(category_id):
                         print("Success")
                     else:
@@ -95,7 +99,7 @@ class HashtagScript:
 
 if __name__ == '__main__':
     print("Script is not active now")
-    pass
+
     # new_category = "Technology"
     # basic_hashtags = ['tech', 'coding', 'robotics']
     # script = HashtagScript(new_category, basic_hashtags)

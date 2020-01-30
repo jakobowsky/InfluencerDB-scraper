@@ -104,11 +104,6 @@ class InstagramScraper(object):
             profile_page_metrics = self.profile_page_metrics(json_data)
             profile_page_recent_posts = self.profile_page_recent_posts(json_data)
             return profile_page_metrics, profile_page_recent_posts
-            # taken_at_timestamp
-            # >> > from datetime import datetime
-            # >> > datetime.fromtimestamp(1172969203.1)
-            # datetime.datetime(2007, 3, 4, 0, 46, 43, 100000)
-        # return info and add it to api in another function
 
     def profile_page_metrics(self, json_data_from_profile):
         results = {}
@@ -198,6 +193,9 @@ class InstagramScraper(object):
         self.get_category_hashtags(firsthashtag, 2)
         new_hashtags = list(self.discovered_hashtags)
         return new_hashtags
+
+
+# USE MAIN
 
 # x = InstagramScraper()
 # print(x.discover_accounts_from_hashtag('coding'))
