@@ -40,9 +40,9 @@ class InstagramScraper(object):
                 ).text
                 self.number_of_requests += 1
             except requests.HTTPError:
-                print("HTTP error, getting new proxy")
+                print("HTTP error.")
             except requests.RequestException:
-                print('RequestException, getting new proxy')
+                print('RequestException.')
             except Exception as e:
                 print("__request_url error: ", e)
             else:
@@ -188,6 +188,7 @@ class InstagramScraper(object):
                 self.already_checked.update(hashtag)
 
     def discover_hashtags(self, firsthashtag):
+        print(f"Discovering hashtags from {firsthashtag}")
         self.discovered_hashtags = set()
         self.already_checked = set()
         self.get_category_hashtags(firsthashtag, 2)
