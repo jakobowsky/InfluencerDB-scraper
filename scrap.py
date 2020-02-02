@@ -6,6 +6,11 @@ from proxychange import ProxyChanger
 import time
 
 
+class APILogger:
+    def print_log(self, msg):
+        print(f"[Instagram API] {msg}")
+
+
 class InstagramScraper(object):
 
     def __init__(self):
@@ -25,12 +30,13 @@ class InstagramScraper(object):
         # self.proxy_changer = ProxyChanger()
         # self.current_proxy = self.proxy_changer.actual_proxy
         self.number_of_requests = 0
+        self.logger = APILogger()
 
     def __request_url(self, link):
         for attempt in range(10):
             try:
                 if self.number_of_requests == 50:
-                    print("Did 50 requests, going to sleep for 15 secs...")
+                    self.logger.print_log(f'Did 50 requests, going to sleep for 15 secs...')
                     time.sleep(15)
                     self.number_of_requests = 0
                 response = requests.get(
@@ -40,7 +46,7 @@ class InstagramScraper(object):
                 ).text
                 self.number_of_requests += 1
             except requests.HTTPError:
-                print("HTTP error.")
+                self.logger.print_log(f'HTTP error.')
             except requests.RequestException:
                 print('RequestException.')
             except Exception as e:

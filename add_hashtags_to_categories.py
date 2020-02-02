@@ -3,6 +3,11 @@ import requests
 import time
 
 
+class HashtagLogger:
+    def print_log(self, msg):
+        print(f"[HASHTAG BOT] {msg}")
+
+
 class HashtagScript:
 
     def __init__(self, category, basic_hashtags):
@@ -11,6 +16,7 @@ class HashtagScript:
         self.category = category.title()
         self.basic_hashtags = basic_hashtags
         self.headers = {'Content-type': 'application/json', 'Accept': '*/*'}
+        self.logger = HashtagLogger()
 
     def __call__(self, *args, **kwargs):
         self.add_category_to_db()
@@ -21,7 +27,7 @@ class HashtagScript:
             response = requests.get(links_to_hashtags).json()
             return response
         except Exception as e:
-            print("ERROR: ", e)
+            self.logger.print_log(f' ERROR - {e}')
 
     def check_amount_current_hashtags(self):
         return len(self.check_current_hashtags())
@@ -57,50 +63,50 @@ class HashtagScript:
         }
         r = requests.post(link_to_category, json=body, headers=self.headers)
         if r.status_code == 201:  # created
-            print("Added new category to db: ", r.json())
+            self.logger.print_log(f'Added new category to db: {r.json()}')
             return True
         else:
-            print("Smth went wrong: ", r.json())
+            self.logger.print_log(f'Something went wrong: {r.json()}')
             raise
 
     def add_category_to_db(self):
+        self.logger.print_log('Script started...')
         link_to_category = f'{self.base_url}categories?name={self.category}'
         try:
             response = requests.get(link_to_category).json()
             category_id = None
             category_name = None
             if response:
-                # check if db is not empty
+                self.logger.print_log('Checking if db is not empty...')
+                print(response)
                 category_id = response[0].get('id')
                 category_name = response[0].get('name').title()
             if category_name == self.category:
-                print("This category is already in db.")
+                self.logger.print_log(f"{category_name} category is already in db.")
                 amount_of_hashtags = self.check_amount_current_hashtags()
-                print(f'It has {amount_of_hashtags} hashtags.')
+                self.logger.print_log(f"It has {amount_of_hashtags} hashtags.")
                 if amount_of_hashtags < 10:  # not sure about this
                     if self.add_new_hashtags_to_db(category_id):
-                        print("Success")
+                        self.logger.print_log('Success')
                     else:
-                        print("Smth went wrong with adding hashtags to db")
+                        self.logger.print_log("Something went wrong with adding hashtags to db")
             else:
-                print("This category is not in db. Adding and finding hashtags.")
+                self.logger.print_log('This category is not in db. Adding and finding hashtags.')
                 if self.__add_category():
                     response = requests.get(link_to_category).json()
-                    print(response)
+                    self.logger.print_log(f' Response: {response}')
                     category_id = response[0].get('id')
                     if self.add_new_hashtags_to_db(category_id):
-                        print("Success")
+                        self.logger.print_log('Success')
                     else:
-                        print("Smth went wrong with adding hashtags to db")
+                        self.logger.print_log("Something went wrong with adding hashtags to db")
 
         except Exception as e:
-            print("ERROR: ", e)
+            self.logger.print_log(f' ERROR - {e}')
 
 
 if __name__ == '__main__':
-    # print("Script is not active now")
-
-    new_category = "Technology"
-    basic_hashtags = ['tech', 'coding', 'robotics']
+    new_category = "Beauty"
+    basic_hashtags = ['fashion', 'beauty']
     script = HashtagScript(new_category, basic_hashtags)
     script()
