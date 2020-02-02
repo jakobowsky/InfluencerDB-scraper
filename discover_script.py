@@ -5,41 +5,48 @@ import random
 from typing import Dict, List
 
 
+class DiscoveryLogger:
+    def print_log(self, msg):
+        print(f"[DISCOVER BOT] {msg}")
+
+
 class DiscoverBot:
     def __init__(self):
         self.base_url = 'http://127.0.0.1:8000/api/'
         self.scraper = InstagramScraper()
         self.headers = {'Content-type': 'application/json', 'Accept': '*/*'}
+        self.logger = DiscoveryLogger()
 
     def start_bot(self):
+        self.logger.print_log('started bot.')
         categories = self.get_categories()
         if categories:
             for category in categories:  # category is a dict
                 number_of_hashtags = random.randint(1, 6)
-                print(f"Number of hashtags random = {number_of_hashtags}")
-                print("Looking for hashtags...")
+                self.logger.print_log(f"Number of hashtags random = {number_of_hashtags}")
+                self.logger.print_log("Looking for hashtags...")
                 hashtags = self.get_hashtags_from_category(category.get("id"))
                 if hashtags:
                     hashtags = hashtags[:number_of_hashtags]
                 else:
-                    print("no hashtags to this category...")
+                    self.logger.print_log("No hashtags to this category...")
                     continue
                 self.discover_new_accounts_through_hashtags(hashtags, category)
-                print("Sleeping for next category...")
+                self.logger.print_log("Sleeping for next category...")
                 time.sleep(random.randint(30, 100))
-        print("Finished.")
+        self.logger.print_log("Finished.")
 
     def check_if_account_exists(self, username):
-        print(f"Checking if {username} is in db.")
+        self.logger.print_log(f"Checking if {username} is in db.")
         link = f"{self.base_url}instagram_accounts?username={username}"
         response = requests.get(link).json()
         if response:
-            print("Account exists.")
+            self.logger.print_log("Account exists.")
             return True
         return False
 
     def add_account_to_db(self, account: str, category: Dict):
-        print(f"Adding {account} to db")
+        self.logger.print_log(f"Adding {account} to db.")
         link_to_adding_account = f'{self.base_url}add_new_account/'
         profile_page_metrics, profile_page_recent_posts = self.scraper.get_current_profile_info(account)
         body = {
@@ -58,9 +65,10 @@ class DiscoverBot:
         for account in accounts:
             if not self.check_if_account_exists(account):
                 if self.add_account_to_db(account, category):
-                    print("Added account to db.")
+                    self.logger.print_log("Added account to db.")
+
                 else:
-                    print(f"Something went wrong while adding {account} account to db.")
+                    self.logger.print_log(f"Something went wrong while adding {account} account to db.")
 
     def discover_new_accounts_through_hashtags(self, hashtags: List[str], category: Dict):
         for hashtag in hashtags:
