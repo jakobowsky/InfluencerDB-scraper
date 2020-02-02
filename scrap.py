@@ -48,12 +48,12 @@ class InstagramScraper(object):
             except requests.HTTPError:
                 self.logger.print_log(f'HTTP error.')
             except requests.RequestException:
-                print('RequestException.')
+                self.logger.print_log(f'RequestException.')
             except Exception as e:
-                print("__request_url error: ", e)
+                self.logger.print_log(f'__request_url error: {e}')
             else:
                 return response
-        print("ERROR! Max attempts. Raising error")
+        self.logger.print_log(f'ERROR! Max attempts. Raising error')
         raise
 
     # def __request_url_proxy(self, link):
@@ -194,7 +194,7 @@ class InstagramScraper(object):
                 self.already_checked.update(hashtag)
 
     def discover_hashtags(self, firsthashtag):
-        print(f"Discovering hashtags from {firsthashtag}")
+        self.logger.print_log(f"Discovering hashtags from {firsthashtag}")
         self.discovered_hashtags = set()
         self.already_checked = set()
         self.get_category_hashtags(firsthashtag, 2)
